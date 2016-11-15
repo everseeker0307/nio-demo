@@ -14,6 +14,10 @@ public class Server {
     private static final int port = 9999;
     private static ServerSocketChannel serverSocketChannel;
     private static Selector selector;
+
+    /**
+     * 单例模式
+     */
     private static class ServerHolder {
         private static Server INSTANCE = new Server();
     }
@@ -26,12 +30,14 @@ public class Server {
             selector = Selector.open();
             serverSocketChannel = ServerSocketChannel.open();   //建立ServerSocketChannel
             serverSocketChannel.socket().bind(new InetSocketAddress(port));     //创建Selector
-            serverSocketChannel.configureBlocking(false);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * 单独一个线程专门负责监听，之后注册到selector
+     */
     public void listen() {
         //监听新的channel连接
         System.out.println("Ready for listening on port " + port);
@@ -51,10 +57,13 @@ public class Server {
         }
     }
 
+    /**
+     * 另外一个线程负责处理接收到的数据
+     */
     public void start() {
         while (true) {
             try {
-                int readyChannels = selector.select(200);
+                int readyChannels = selector.select(100);
                 if (readyChannels == 0)
                     continue;
                 System.out.println("\ncurrent all channels num: " + readyChannels);
